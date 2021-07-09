@@ -1,0 +1,169 @@
+<template>
+  <div id="title-bar">
+    <img id="title-img" src="../assets/logo.png" />
+    <div id="title"><slot>Virtual Device Manager</slot></div>
+    <div id="title-bar-btns">
+      <button
+        id="close-btn"
+        class="control-button"
+        title="Close"
+        @click="closeWindow"
+        ><img src="../assets/close.png" alt="Close"
+      /></button>
+      <button
+        id="max-btn"
+        class="control-button"
+        ref="max"
+        @click="toggleMaximize"
+        title="Maximize"
+        ><img
+          ref="maximg"
+          src="../assets/maximize.png"
+          alt="Maximize / Restore Down"
+      /></button>
+      <button
+        id="min-btn"
+        class="control-button"
+        title="Minimize"
+        @click="minimizeWindow"
+        ><img src="../assets/minimize.png" alt="Minimize"
+      /></button>
+    </div>
+  </div>
+</template>
+<script lang="ts">
+  import { Vue } from 'vue-class-component';
+  import { ipcRenderer } from 'electron';
+
+  export default class Header extends Vue {
+    declare $refs: {
+      maximg: HTMLImageElement;
+      max: HTMLButtonElement;
+    };
+    changeMaxBtn(isMaximized: boolean) {
+      this.$refs.maximg.src = isMaximized
+        ? require('../assets/unmaximize.png')
+        : require('../assets/maximize.png');
+      this.$refs.maximg.alt = isMaximized ? 'Restore Down' : 'Maximize';
+      this.$refs.max.title = isMaximized ? 'Restore Down' : 'Maximize';
+    }
+    toggleMaximize() {
+      ipcRenderer.send('toggleMaximize');
+    }
+    minimizeWindow() {
+      ipcRenderer.send('minimizeWindow');
+    }
+    closeWindow() {
+      window.close();
+    }
+    mounted() {
+      ipcRenderer.on('onMinMax', (e: any, b: boolean) => this.changeMaxBtn(b));
+    }
+    beforeUnmount() {
+      ipcRenderer.off('onMinMax', (e: any, b: boolean) => this.changeMaxBtn(b));
+    }
+  }
+</script>
+
+<style>
+  .subtitle {
+    font-size: 20px;
+    margin-top: 30px;
+    margin-bottom: 20px;
+    margin-left: 25px;
+    margin-right: 25px;
+    white-space: pre;
+  }
+
+  #title-bar {
+    -webkit-app-region: drag;
+    user-select: none;
+    -webkit-user-select: none;
+    height: 35px;
+    padding: none;
+    margin: 0px;
+    background-color: #141414;
+    border-bottom-width: 0.5px;
+    border-bottom-color: #c2c2c2d8;
+    position: fixed;
+    top: 0px;
+    width: 100%;
+    z-index: 3;
+    box-shadow: 0px -5px 20px 20px #141414;
+  }
+
+  .title-bar {
+    height: 55px;
+    background-color: #00000000;
+    position: relative;
+    top: 0px;
+    width: 100%;
+  }
+
+  #title-img {
+    position: fixed;
+    top: 5px;
+    left: 5px;
+    z-index: 4;
+    width: 25px;
+    height: 25px;
+  }
+
+  #title {
+    position: fixed;
+    top: 4px;
+    left: 39px;
+    font-weight: 400;
+    font-size: 20px;
+    z-index: 4;
+  }
+
+  #title-bar-btns {
+    -webkit-app-region: no-drag;
+    position: fixed;
+    top: 0px;
+    right: 0px;
+    z-index: 4;
+  }
+
+  .control-button {
+    background-color: transparent;
+    width: 50px;
+    height: 35px;
+    color: #c2c2c2d8;
+    border-bottom: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    padding: 0px;
+    margin: 0px;
+    float: right;
+    line-height: 0px;
+    transition: 0.5s;
+    user-select: none;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+  }
+
+  .control-button img {
+    user-select: none;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+  }
+
+  #max-btn:hover {
+    background-color: #444444c2;
+  }
+
+  #min-btn:hover {
+    background-color: #444444c2;
+  }
+
+  #close-btn:hover {
+    background-color: #960000c2;
+  }
+
+  .control-button:focus {
+    outline: none;
+  }
+</style>
