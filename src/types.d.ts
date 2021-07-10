@@ -7,5 +7,3 @@ export interface User {
   premium_type: number;
   username: string;
 }
-
-declare module 'plain-draggable';
