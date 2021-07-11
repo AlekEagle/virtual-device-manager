@@ -115,9 +115,8 @@
         title="This will delete this virtual cable!"
         >Delete Virtual Cable</button
       >
-    </div>
-  </Modal>
-  <Footer />
+    </div> </Modal
+  ><Footer />
 </template>
 
 <script lang="ts">
@@ -345,8 +344,6 @@
       this.$data.visualCables = [];
 
       setTimeout(() => this.makeCables(true), 760);
-
-      console.log('beeeeep');
     }
 
     deleteVirtCable() {

@@ -654,6 +654,22 @@ export class PASinkInput implements PAItem {
     this.sink = sink.id;
     return;
   }
+
+  public async toggleMute() {
+    let child;
+    try {
+      child = childProcess.execSync(
+        `pactl set-sink-input-mute ${this.id} toggle`,
+        {
+          encoding: 'utf8'
+        }
+      );
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+    this.muted = !this.muted;
+  }
 }
 
 export class PASourceOutput implements PAItem {
@@ -816,6 +832,22 @@ export class PASourceOutput implements PAItem {
 
     this.source = source.id;
     return;
+  }
+
+  public async toggleMute() {
+    let child;
+    try {
+      child = childProcess.execSync(
+        `pactl set-source-output-mute ${this.id} toggle`,
+        {
+          encoding: 'utf8'
+        }
+      );
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+    this.muted = !this.muted;
   }
 }
 
