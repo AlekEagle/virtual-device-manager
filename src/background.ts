@@ -37,6 +37,7 @@ async function createWindow() {
       height: 600,
       frame: false,
       backgroundColor: '#252525',
+      icon: 'assets/logo_large.png',
       webPreferences: {
         nodeIntegration: (process.env
           .ELECTRON_NODE_INTEGRATION as unknown) as boolean,
@@ -85,8 +86,20 @@ ipcMain.on('minimizeWindow', () => {
 });
 
 ipcMain.on('ctx-mnu', event => {
-  console.log('lolll');
   let rCMenu = new Menu();
+  rCMenu.append(
+    new MenuItem({
+      label: 'Create Virtual Node',
+      click: () => {
+        event.sender.send('ctx-mnu-itm', 'virtual-node');
+      }
+    })
+  );
+  rCMenu.append(
+    new MenuItem({
+      type: 'separator'
+    })
+  );
   rCMenu.append(
     new MenuItem({
       label: 'Settings',

@@ -53,43 +53,43 @@ export declare type PAQueryTypes =
   | 'samples'
   | 'cards';
 
-export async function fetchFromPactl(
+export function fetchFromPactl (
   type?: PAQueryTypes,
   omitVirtCables: boolean = true
-) {
-  let items: PAItem[] = [];
-  let child;
-  try {
-    child = childProcess.execSync(`pactl list${type ? ` ${type}` : ''}`, {
-      encoding: 'utf-8'
-    });
-  } catch (err) {
-    console.error(err);
-    throw err;
-  }
-  let sstdout = child.split('\n\n');
-  sstdout.forEach(element => {
-    if (element.length < 1) return;
-    let type = element.split(' #')[0];
-    switch (type) {
-      case 'Sink':
-        items.push(new PASink(element));
-        break;
-      case 'Source':
-        items.push(new PASource(element));
-        break;
-      case 'Sink Input':
-        items.push(new PASinkInput(element));
-        break;
-      case 'Source Output':
-        items.push(new PASourceOutput(element));
-        break;
-    }
-  });
+): Promise<PAItem[]> {
+  return new Promise((resolve, reject) => {
+    let items: PAItem[] = [];
+    let child;
+    
+    childProcess.exec(`pactl list${type ? ` ${type}` : ''}`, (err, stdout) => {
+      if (err) reject(err);
 
-  return omitVirtCables
-    ? items.filter(i => i.driver !== 'module-loopback.c')
-    : items;
+
+      let sstdout = stdout.split('\n\n');
+      sstdout.forEach(element => {
+        if (element.length < 1) return;
+        let type = element.split(' #')[0];
+        switch (type) {
+          case 'Sink':
+            items.push(new PASink(element));
+            break;
+          case 'Source':
+            items.push(new PASource(element));
+            break;
+          case 'Sink Input':
+            items.push(new PASinkInput(element));
+            break;
+          case 'Source Output':
+            items.push(new PASourceOutput(element));
+            break;
+        }
+      });
+
+      resolve(omitVirtCables
+        ? items.filter(i => i.driver !== 'module-loopback.c')
+        : items);
+    });
+  });
 }
 
 export async function getVirtualCables() {
@@ -669,6 +669,7 @@ export class PASinkInput implements PAItem {
       throw err;
     }
     this.muted = !this.muted;
+    return;
   }
 }
 
@@ -848,6 +849,7 @@ export class PASourceOutput implements PAItem {
       throw err;
     }
     this.muted = !this.muted;
+    return;
   }
 }
 
@@ -879,15 +881,49 @@ export async function createNullSink(name: string) {
   let child;
   try {
     child = childProcess.execSync(
-      `pactl load-module module-null-sink sink_name=${name.replace(/ /g, '_')}`,
+      `pactl load-module module-null-sink sink_name=${name.replace(/ /g, '_')} sink_properties=device.description=${name.replace(/ /g, '_')}`,
       { encoding: 'utf-8' }
     );
   } catch (err) {
     console.error(err);
     throw err;
   }
+  return;
 }
+
+export function deleteNullSink(sink: PASink) {
+  return new Promise<void>((resolve, reject) => {
+    if (sink.driver !== 'module-null-sink.c') {
+      reject('Sink is not null sink.');
+      return;
+    }
+    childProcess.exec(`pactl unload-module ${sink.owner}`, (err, stdout) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      resolve();
+    })
+  });
+}
+
+export function createVirtualCable(source: PASource, sink: PASink): Promise<void> {
+  return new Promise((resolve, reject) => {
+    childProcess.exec(`pactl load-module module-loopback source="${source.name}" sink="${sink.name}"`, (err, stdout) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      console.log(stdout);
+      resolve();
+    });
+  });
+}
+
 export default {
   fetchFromPactl,
-  getVirtualCables
+  getVirtualCables,
+  deleteNullSink,
+  createVirtualCable,
+  createNullSink
 };

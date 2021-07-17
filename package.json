@@ -7,6 +7,7 @@
     "name": "Alek Evans",
     "email": "vdm-support@alekeagle.com"
   },
+  "description": "A program to manage virtual audio cables for pulse audio!",
   "license": "MIT",
   "scripts": {
     "serve": "vue-cli-service serve",

@@ -13,7 +13,9 @@
     </router-link>
     <span v-else class="project_link disabled" />
   </div>
-  <div v-else-if="$attrs.action" :class="getClasses()">
+  <div v-else-if="$attrs.action" :class="`project${
+        $attrs.disabled ? ' disabled' : ''
+      } ${$attrs.classes.join(' ')}`">
     <img
       v-if="$attrs.icon"
       class="project_icon"
@@ -25,7 +27,9 @@
     <span v-if="!$attrs.disabled" class="project_link" @click="handleClick" />
     <span v-else class="project_link disabled" />
   </div>
-  <div v-else :class="getClasses()">
+  <div v-else :class="`project${
+        $attrs.disabled ? ' disabled' : ''
+      } ${$attrs.classes.join(' ')}`">
     <img
       v-if="$attrs.icon"
       class="project_icon"
@@ -54,11 +58,6 @@
     };
     handleClick() {
       this.$attrs.action(this);
-    }
-    getClasses() {
-      return `project${
-        this.$attrs.disabled ? ' disabled' : ''
-      } ${this.$attrs.classes.join(' ')}`;
     }
   }
 </script>
